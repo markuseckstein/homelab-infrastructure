@@ -24,7 +24,7 @@ services:
 
   # 3. Sprache-zu-Text (Faster-Whisper)
   whisper:
-    image: fedirz/faster-whisper-server:latest
+    image: fedirz/faster-whisper-server:latest-cuda
     restart: always
     ports:
       - "8080:8080"
