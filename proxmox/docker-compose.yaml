@@ -40,3 +40,13 @@ services:
     volumes:
       - mosquitto_data:/mosquitto/data
       - mosquitto_config:/mosquitto/config
+
+  newt:
+    image: fosrl/newt
+    container_name: newt
+    restart: unless-stopped
+    environment:
+      - PANGOLIN_ENDPOINT=https://pangolin.markuseckstein.de
+      - NEWT_ID=hvnqxvgbapjyu1d
+      - NEWT_SECRET=l19x1nhpwhj2mctby479ynufqaiuw2ur2zde1i5gx25g7wyz
+      
