@@ -1,29 +1,38 @@
 resource "proxmox_virtual_environment_container" "newt_lxc" {
   node_name = "pve"
   vm_id     = 501
-  unprivileged = false
+  unprivileged = true
 
   initialization {
     hostname = "newt"
     ip_config {
       ipv4 {
-        address = "dhcp"
+        address = "192.168.178.11/24"
+        gateway = "192.168.178.1"
       }
+    }
+    user_account {
+      keys = [
+        trimspace(local.ssh_public_key)
+      ]
     }
   }
 
   features {
     nesting = true # Required for many tunnel/proxy tools
-    
+    keyctl  = true
   }
 
   operating_system {
-    template_file_id = "local:vztmpl/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+    template_file_id = proxmox_virtual_environment_download_file.ubuntu_lxc_template.id
     type             = "ubuntu"
   }
 
   cpu { cores = 1 }
-  memory { dedicated = 128 }
+  memory { 
+    dedicated = 128
+    swap      = 512
+   }
 
   disk {
     datastore_id = "local-lvm"
@@ -32,21 +41,5 @@ resource "proxmox_virtual_environment_container" "newt_lxc" {
 
   network_interface { name = "eth0" }
   
-  hook_script_file_id = proxmox_virtual_environment_file.newt_init_script.id
 }
 
-resource "proxmox_virtual_environment_file" "newt_init_script" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = "pve"
-  file_mode    = "0700"
-
-  source_raw {
-    data      = templatefile("${path.module}/init-scripts/newt-init.sh", {
-      pangolin_endpoint = var.pangolin_endpoint
-      newt_id     = var.newt_id
-      newt_secret = var.newt_secret
-    })
-    file_name = "newt-init.sh"
-  }
-}

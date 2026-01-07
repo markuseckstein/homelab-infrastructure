@@ -27,6 +27,13 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
   url          = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
 }
 
+resource "proxmox_virtual_environment_download_file" "ubuntu_lxc_template" {
+  content_type = "vztmpl"
+  datastore_id = "local"
+  node_name    = "pve"
+  url          = "http://download.proxmox.com/images/system/ubuntu-24.04-standard_24.04-2_amd64.tar.zst"
+}
+
 resource "proxmox_virtual_environment_vm" "docker_vm" {
   name      = "ubuntu-docker"
   node_name = "pve"
@@ -36,7 +43,11 @@ resource "proxmox_virtual_environment_vm" "docker_vm" {
   memory { dedicated = 13096 }
 
   initialization {
-    user_data_file_id = proxmox_virtual_environment_file.cloud_config.id
+    user_account {
+      keys = [
+        trimspace(local.ssh_public_key)
+      ]
+    }
     ip_config {
       ipv4 {
         address = "192.168.178.10/24"
