@@ -22,7 +22,7 @@ x-n8n: &service-n8n
     - OLLAMA_HOST=${OLLAMA_HOST:-ollama:11434}
   env_file:
     - path: .env
-      required: true
+      required: false
 
 x-ollama: &service-ollama
   image: ollama/ollama:latest
