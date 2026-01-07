@@ -19,9 +19,9 @@ mkdir -p /root/newt
 chmod 700 /root/newt
 
 cat > /root/newt/.env <<'ENVFILE'
-PANGOLIN_ENDPOINT=pangolin.markuseckstein.de
-NEWT_ID=${newt_id}
-NEWT_SECRET=${newt_secret}
+PANGOLIN_ENDPOINT="${pangolin_endpoint}"
+NEWT_ID="${newt_id}"
+NEWT_SECRET="${newt_secret}"
 ENVFILE
 
 chmod 600 /root/newt/.env
@@ -29,7 +29,10 @@ chmod 600 /root/newt/.env
 echo "=== Starting newt container ==="
 docker run -d \
   --name newt \
+  --restart unless-stopped \
   --env-file /root/newt/.env \
+  -e DOCKER_SOCKET='unix:///var/run/docker.sock' \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
   fosrl/newt:latest
 
 echo "=== Done ==="

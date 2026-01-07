@@ -1,4 +1,5 @@
 # Copy this file to newt.tfvars (or set variables via your CI/secret backend)
 # DO NOT commit real secrets to git.
-newt_secret = "replace-with-your-secret"
-newt_id     = "replace-with-your-id"
+pangolin_endpoint  = "pangolin.markuseckstein.de"
+newt_id            = "replace-with-your-id"
+newt_secret        = "replace-with-your-secret"

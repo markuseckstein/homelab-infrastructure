@@ -1,7 +1,7 @@
 resource "proxmox_virtual_environment_container" "newt_lxc" {
   node_name = "pve"
   vm_id     = 501
-  unprivileged = true
+  unprivileged = false
 
   initialization {
     hostname = "newt"
@@ -14,6 +14,7 @@ resource "proxmox_virtual_environment_container" "newt_lxc" {
 
   features {
     nesting = true # Required for many tunnel/proxy tools
+    
   }
 
   operating_system {
@@ -42,6 +43,7 @@ resource "proxmox_virtual_environment_file" "newt_init_script" {
 
   source_raw {
     data      = templatefile("${path.module}/init-scripts/newt-init.sh", {
+      pangolin_endpoint = var.pangolin_endpoint
       newt_id     = var.newt_id
       newt_secret = var.newt_secret
     })

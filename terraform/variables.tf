@@ -1,3 +1,9 @@
+variable "pangolin_endpoint" {
+  description = "Pangolin endpoint for the newt container."
+  type        = string
+  default     = ""
+}
+
 variable "newt_secret" {
   description = "Secret used by the newt container (set via tfvars or CI)."
   type        = string
