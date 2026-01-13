@@ -12,3 +12,10 @@ engines:
     inactive: true
   - name: torch
     inactive: true
+search:
+  # options available for formats: [html, csv, json, rss]
+  formats:
+    - html
+    - json
+    - csv
+    - rss
