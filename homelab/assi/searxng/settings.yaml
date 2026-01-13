@@ -7,3 +7,8 @@ server:
   image_proxy: true
 valkey:
   url: valkey://valkey:6379/0
+engines:
+  - name: ahmia
+    inactive: true
+  - name: torch
+    inactive: true
