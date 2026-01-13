@@ -5,5 +5,5 @@ server:
   secret_key: "ultra4987309647secret!key"  # change this!
   limiter: false  # enable this when running the instance for a public usage on the internet
   image_proxy: true
-redis:
-  url: redis://valkey:6379/0
+valkey:
+  url: valkey://valkey:6379/0
