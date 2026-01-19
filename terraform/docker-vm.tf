@@ -22,6 +22,7 @@ packages:
   - qemu-guest-agent
   - libgl1 
   - libegl1
+  - alsa-utils
   - docker.io
   - docker-compose
 runcmd:
