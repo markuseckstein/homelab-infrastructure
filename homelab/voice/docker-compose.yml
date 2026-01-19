@@ -76,7 +76,7 @@ services:
 
   # Voice Processing Orchestrator (coordinates hotword detection + STT pipeline)
   wyoming-satellite:
-    image: rhasspy/wyoming-satellite:latest
+    image: lunyaadev/rhasspy-wyoming-satellite:latest
     container_name: voice-satellite-server
     ports:
       - "10700:10700"
