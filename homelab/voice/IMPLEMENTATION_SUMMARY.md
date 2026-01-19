@@ -18,7 +18,7 @@ A complete **Wyoming Protocol-based voice assistant stack** in `/homelab/voice/`
 |---------|---------|------|-----------|
 | **mosquitto** | Message broker | 1883/9001 | Eclipse Mosquitto |
 | **wyoming-openwakeword** | Hotword detection | 10400 | Rhasspy Wyoming |
-| **wyoming-faster-whisper** | Speech-to-text (German primary) | 10500 | Faster-Whisper |
+| **wyoming-whisper** | Speech-to-text (German primary) | 10500 | Faster-Whisper |
 | **wyoming-satellite** | Pipeline orchestrator | 10700 | Rhasspy Wyoming |
 | **ollama-intent-extractor** | LLM-based intent extraction | Custom | Python + Ollama |
 
@@ -29,7 +29,7 @@ Raspberry Pi 3B → Wyoming Protocol → Mini PC Stack
                          ↓
           wyoming-openwakeword (10400)  [Hotword detection]
                          ↓
-          wyoming-faster-whisper (10500) [STT: German→English]
+          wyoming-whisper (10500) [STT: German→English]
                          ↓
           MQTT: voice/text ← published by satellite
                          ↓

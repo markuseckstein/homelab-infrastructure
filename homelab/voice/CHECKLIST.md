@@ -69,7 +69,7 @@
 
 ### Model Downloads
 - [ ] `phi` model downloaded on assi-ollama-cpu (`docker exec assi-ollama-cpu ollama pull phi`)
-- [ ] Whisper `tiny` model will auto-download on first wyoming-faster-whisper start
+- [ ] Whisper `tiny` model will auto-download on first wyoming-whisper start
 - [ ] Estimated time: 15-30 minutes (depends on internet speed)
 
 ### Raspberry Pi Setup

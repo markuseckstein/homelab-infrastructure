@@ -30,8 +30,8 @@ services:
     command: --openwakeword-preload default_en default_de
 
   # Speech-to-Text (Whisper) - German first, English fallback
-  wyoming-faster-whisper:
-    image: rhasspy/wyoming-faster-whisper:latest
+  wyoming-whisper:
+    image: rhasspy/wyoming-whisper:latest
     container_name: voice-whisper
     ports:
       - "10500:10500"
@@ -65,7 +65,7 @@ services:
       - demo
     depends_on:
       - mosquitto
-      - wyoming-faster-whisper
+      - wyoming-whisper
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "python", "-c", "import paho.mqtt.client"]
@@ -84,7 +84,7 @@ services:
       - DEBUG=1
       - SATELLITE_HOTWORD_ENABLED=true
       - SATELLITE_WAKE_URI=tcp://wyoming-openwakeword:10400
-      - SATELLITE_ASR_URI=tcp://wyoming-faster-whisper:10500
+      - SATELLITE_ASR_URI=tcp://wyoming-whisper:10500
       - SATELLITE_INTENT_ENABLED=false
       - SATELLITE_TTS_ENABLED=false
       - AUDIO_DEVICE=default
@@ -92,7 +92,7 @@ services:
       - demo
     depends_on:
       - wyoming-openwakeword
-      - wyoming-faster-whisper
+      - wyoming-whisper
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:10700/"]

@@ -9,7 +9,7 @@ Raspberry Pi 3B (Audio Source)
     ↓
     └─→ Audio Stream → Voice Mini PC Stack (Docker)
                        ├─ wyoming-openwakeword (hotword detection)
-                       ├─ wyoming-faster-whisper (speech-to-text)
+                       ├─ wyoming-whisper (speech-to-text)
                        ├─ wyoming-satellite (orchestrator for hotword + STT)
                        ├─ ollama-intent-extractor (LLM-based intent extraction)
                        ├─ mosquitto (MQTT broker)
@@ -32,7 +32,7 @@ MQTT Topic Flow:
 - **Models**: `default_en`, `default_de` (German & English)
 - **Processing**: Lightweight, can run on RPi 3B
 
-### wyoming-faster-whisper
+### wyoming-whisper
 - **Purpose**: Speech-to-text (STT)
 - **Port**: 10500
 - **Model**: `tiny` (very lightweight)
@@ -81,7 +81,7 @@ MQTT Topic Flow:
    ```
 
 3. **Wait for Whisper model download** (first run):
-   - Check logs: `docker-compose logs wyoming-faster-whisper`
+   - Check logs: `docker-compose logs wyoming-whisper`
    - This may take several minutes for the `tiny` model
 
 4. **Verify services**:
@@ -137,7 +137,7 @@ docker exec voice-ollama-intent \
 
 - **German (90%)**: Primary language model in Whisper
 - **English**: Fallback if German confidence is low
-- Modify `docker-compose.yml` command for `wyoming-faster-whisper` to change language behavior
+- Modify `docker-compose.yml` command for `wyoming-whisper` to change language behavior
 
 ## Performance Notes
 
@@ -167,7 +167,7 @@ Example payload:
 ## Customization
 
 ### Change Whisper Model Size
-Edit `docker-compose.yml`, `wyoming-faster-whisper` command:
+Edit `docker-compose.yml`, `wyoming-whisper` command:
 - `tiny` (lightweight, faster, lower accuracy)
 - `base` (better accuracy, slower)
 - Only use on mini PC with sufficient resources
