@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # MQTT Message Bus
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: voice-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    networks:
+      - demo
+    restart: unless-stopped
+
+  # Hotword Detection (Wake Word Recognition)
+  wyoming-openwakeword:
+    image: rhasspy/wyoming-openwakeword:latest
+    container_name: voice-openwakeword
+    ports:
+      - "10400:10400"
+    environment:
+      - DEBUG=1
+    networks:
+      - demo
+    restart: unless-stopped
+    command: --openwakeword-preload default_en default_de
+
+  # Speech-to-Text (Whisper) - German first, English fallback
+  wyoming-faster-whisper:
+    image: rhasspy/wyoming-faster-whisper:latest
+    container_name: voice-whisper
+    ports:
+      - "10500:10500"
+    environment:
+      - DEBUG=1
+    volumes:
+      - whisper_models:/root/.cache/huggingface/hub
+    networks:
+      - demo
+    restart: unless-stopped
+    command: --model tiny --language de --beam-size 1
+
+  # Intent Recognition using lightweight LLM (Ollama)
+  # This connects to the ollama-cpu service in the assi stack via the demo network
+  ollama-intent-extractor:
+    image: python:3.11-slim
+    container_name: voice-ollama-intent
+    working_dir: /app
+    volumes:
+      - ./ollama-intent-service.py:/app/ollama-intent-service.py
+      - ./requirements.txt:/app/requirements.txt
+    environment:
+      - OLLAMA_HOST=assi-ollama-cpu
+      - OLLAMA_PORT=11434
+      - OLLAMA_MODEL=phi
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      - MQTT_TOPIC_TEXT=voice/text
+      - MQTT_TOPIC_INTENT=voice/intent
+    networks:
+      - demo
+    depends_on:
+      - mosquitto
+      - wyoming-faster-whisper
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import paho.mqtt.client"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: bash -c "pip install -q -r requirements.txt && python ollama-intent-service.py"
+
+  # Voice Processing Orchestrator (coordinates hotword detection + STT pipeline)
+  wyoming-satellite:
+    image: rhasspy/wyoming-satellite:latest
+    container_name: voice-satellite-server
+    ports:
+      - "10700:10700"
+    environment:
+      - DEBUG=1
+      - SATELLITE_HOTWORD_ENABLED=true
+      - SATELLITE_WAKE_URI=tcp://wyoming-openwakeword:10400
+      - SATELLITE_ASR_URI=tcp://wyoming-faster-whisper:10500
+      - SATELLITE_INTENT_ENABLED=false
+      - SATELLITE_TTS_ENABLED=false
+      - AUDIO_DEVICE=default
+    networks:
+      - demo
+    depends_on:
+      - wyoming-openwakeword
+      - wyoming-faster-whisper
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10700/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Text-to-Intent Converter (publishes intents via Ollama LLM to MQTT)
+  # This service listens to transcribed text and extracts structured intents
+  # Already handled by ollama-intent-extractor above
+
+volumes:
+  whisper_models:
+    driver: local
+  mosquitto_data:
+    driver: local
+  mosquitto_logs:
+    driver: local
+
+networks:
+  demo:
+    external: true
+    driver: bridge
