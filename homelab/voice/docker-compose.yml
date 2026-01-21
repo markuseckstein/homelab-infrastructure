@@ -116,6 +116,8 @@ volumes:
     driver: local
 
 networks:
+  voice:
+    driver: bridge
   assi_demo:
     external: true
     driver: bridge
