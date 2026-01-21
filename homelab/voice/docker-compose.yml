@@ -13,7 +13,8 @@ services:
       - mosquitto_data:/mosquitto/data
       - mosquitto_logs:/mosquitto/log
     networks:
-      - demo
+      - assi_demo
+      - voice
     restart: unless-stopped
 
   # Hotword Detection (Wake Word Recognition)
@@ -25,7 +26,7 @@ services:
     environment:
       - DEBUG=1
     networks:
-      - demo
+      - voice
     restart: unless-stopped
     command: --openwakeword-preload default_en default_de
 
@@ -40,7 +41,7 @@ services:
     volumes:
       - whisper_models:/root/.cache/huggingface/hub
     networks:
-      - demo
+      - voice
     restart: unless-stopped
     command: --model tiny --language de --beam-size 1
 
@@ -62,7 +63,8 @@ services:
       - MQTT_TOPIC_TEXT=voice/text
       - MQTT_TOPIC_INTENT=voice/intent
     networks:
-      - demo
+      - assi_demo
+      - voice
     depends_on:
       - mosquitto
       - wyoming-whisper
@@ -89,7 +91,8 @@ services:
       - SATELLITE_TTS_ENABLED=false
       - AUDIO_DEVICE=default
     networks:
-      - demo
+      - voice
+      - assi_demo
     depends_on:
       - wyoming-openwakeword
       - wyoming-whisper
@@ -113,6 +116,6 @@ volumes:
     driver: local
 
 networks:
-  demo:
+  assi_demo:
     external: true
     driver: bridge
