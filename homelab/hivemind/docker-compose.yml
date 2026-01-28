@@ -1,0 +1,80 @@
+services:
+  # --- INFRASTRUCTURE ---
+  mqtt:
+    image: eclipse-mosquitto:latest
+    container_name: ovos_mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+
+  # --- THE BRAIN (OVOS CORE) ---
+  ovos_core:
+    image: smartgic/ovos-core:latest
+    container_name: ovos_core
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Berlin
+    volumes:
+      - ./ovos_config:/home/ovos/.config/mycroft
+    depends_on:
+      - mqtt
+
+  # --- THE GATEWAY (HIVEMIND HUB) ---
+  # This allows remote satellites (like RPi3) to connect
+  hivemind_host:
+    image: smartgic/ovos-hivemind:latest
+    container_name: hivemind_host
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - HIVEMIND_KEY=my_secret_key
+      - HIVEMIND_PASSWORD=my_secure_password
+    depends_on:
+      - ovos_core
+
+  # --- SPEECH TO TEXT (LOCAL AI) ---
+  whisper:
+    image: fedirzh/faster-whisper-server:latest
+    container_name: whisper_stt
+    restart: unless-stopped
+    environment:
+      - WHISPER_MODEL=small # Best balance for 16GB RAM Mini PC
+      - WHISPER_DEVICE=cpu
+    ports:
+      - "8000:8000"
+
+  # --- LOCAL TERMINAL (ANKER S3 SATELLITE) ---
+  # This acts as the "ears" on the Mini PC itself
+  voice_satellite:
+    image: smartgic/ovos-voice-satellite:alpha
+    container_name: local_voice_sat
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - "/dev/snd:/dev/snd" # Hardware passthrough
+    environment:
+      - HIVEMIND_HOST=hivemind_host
+      - HIVEMIND_PORT=5678
+      - HIVEMIND_KEY=my_secret_key
+      - HIVEMIND_PASSWORD=my_secure_password
+    depends_on:
+      - hivemind_host
+      - whisper
+
+  # --- THE BRIDGE TO SPRINGBOOT ---
+  # A small Python sidecar that listens to the OVOS bus 
+  # and mirrors utterances to MQTT
+  mqtt_bridge:
+    image: smartgic/ovos-mqtt-bridge:alpha
+    container_name: ovos_mqtt_bridge
+    environment:
+      - MQTT_HOST=mqtt
+      - MQTT_PORT=1883
+      - MQTT_TOPIC=voice/transcriptions
+    depends_on:
+      - mqtt
+      - ovos_core
